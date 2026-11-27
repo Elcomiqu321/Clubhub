@@ -71,9 +71,21 @@ saved as a commit to that file through the GitHub API.
 
 - **URL** (once Pages is turned on): https://elcomiqu321.github.io/Clubhub/
 - **Viewing** works for anyone, with no setup.
-- **Saving changes** needs a GitHub token on each device: in the app, open Settings and paste a
-  fine-grained token limited to this repo with *Contents: Read and write*. The token stays in that
-  browser only. Anyone who has it can change files in the repo, so share it only with testers you trust.
+- **Saving changes** needs a GitHub token. There are three ways to give the app one:
+  1. **Shared token for everyone** (no setup for visitors): put a token in the `token` field of
+     [`docs/config.js`](docs/config.js), for example with GitHub's web editor.
+  2. **Setup link**: open `https://elcomiqu321.github.io/Clubhub/#/setup?token=YOUR_TOKEN` once on
+     a device. The token is saved in that browser and removed from the address bar.
+  3. **Per device**: paste the token in the app's Settings page.
+
+  Use a fine-grained token limited to this repo with *Contents: Read and write* only.
+
+> 🚨 **About the shared token in `docs/config.js`:** that file is public. Anyone who opens the site
+> or the repo can copy the token and use it to **read and change any file in the repo**, including
+> the code, not just the club data. Only do this for throwaway testing. Also, GitHub scans public
+> repos for leaked tokens: it may block the commit or automatically revoke the token. If saving
+> stops working with a "token refused" message, use the setup link instead.
+
 - Without a token, reads come from GitHub's file cache, which can be up to ~5 minutes behind.
 
 To turn it on: merge this branch into `main`, then in the repo go to

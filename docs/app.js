@@ -57,7 +57,9 @@ const randomHex = (n) => [...crypto.getRandomValues(new Uint8Array(n))]
   .map((b) => b.toString(16).padStart(2, "0")).join("");
 
 // ---------------------------------------------------------------- GitHub storage
-const token = () => store.get("clubhub_token");
+// Token order: one saved on this device (Settings or setup link), else the shared one in config.js.
+const sharedToken = () => (CFG.token || "").trim();
+const token = () => store.get("clubhub_token") || sharedToken() || null;
 
 function b64ToText(b64) {
   const bin = atob(b64.replace(/\n/g, ""));
@@ -221,11 +223,15 @@ views.settings = () => `<h1>Settings</h1>
       Permissions: <em>Contents: Read and write</em>. The token is stored only in this browser.</p>
     <p class="small muted">Anyone holding this token can change files in the repo, so only share it with people you trust.</p>
     <form class="form" data-form="token">
-      <label>GitHub token <input name="token" type="password" placeholder="github_pat_…" value="${esc(token() || "")}"></label>
+      <label>GitHub token <input name="token" type="password" placeholder="github_pat_…" value="${esc(store.get("clubhub_token") || "")}"></label>
       <div class="row-form"><button class="btn">Save token</button>
         <button type="button" class="btn ghost" data-action="forget-token">Remove token</button></div>
     </form>
-    <p class="small">Status: ${token() ? "token set, changes are saved to GitHub" : "no token, view only"}</p>
+    <p class="small">Status: ${store.get("clubhub_token") ? "token saved on this device, changes are saved to GitHub"
+      : sharedToken() ? "using the shared token from config.js, changes are saved to GitHub"
+      : "no token, view only"}</p>
+    ${token() ? `<p class="small muted">Setup link for other devices (contains the token, share carefully):<br>
+      <code>${esc(location.href.split("#")[0])}#/setup?token=${esc(token())}</code></p>` : ""}
   </div>
   <p class="small muted">Data file: <a href="https://github.com/${esc(CFG.owner)}/${esc(CFG.repo)}/blob/${esc(CFG.branch)}/${esc(CFG.path)}" target="_blank" rel="noopener">${esc(CFG.path)}</a>
     · <button class="linkbtn" style="color:var(--blue)" data-action="reload">Reload data</button></p>`;
@@ -807,6 +813,16 @@ window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); defe
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
 
 // ---------------------------------------------------------------- start
+// One-time setup link: #/setup?token=... saves the token on this device, then removes it from the URL.
+function handleSetupLink() {
+  const m = location.hash.match(/^#\/setup\?(.*)$/);
+  if (!m) return;
+  const t = new URLSearchParams(m[1]).get("token");
+  if (t) store.set("clubhub_token", t.trim());
+  history.replaceState(null, "", location.pathname + location.search + "#/");
+  pendingFlash = t ? "This device can now save changes." : null;
+}
+
 async function loadData() {
   try {
     DB = (await fetchRemote()).data;
@@ -817,4 +833,5 @@ async function loadData() {
       <p><button class="btn" data-action="reload">Try again</button> <a href="#/settings">Settings</a></p>`;
   }
 }
-loadData();
+handleSetupLink();
+loadData().then(showPending);
