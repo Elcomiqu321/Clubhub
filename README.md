@@ -58,6 +58,30 @@ deploy the app to a host with HTTPS, or use a tunnel such as `ngrok http 5000` a
 https link it gives you. Then use "Install app" (Android / Chrome) or Share → "Add to Home Screen"
 (iPhone / Safari).
 
+## Online test version (GitHub Pages)
+
+> ⚠️ **Testing only. Everything is public.** The online version keeps the whole club database in
+> [`data/clubhub.json`](data/clubhub.json), a public file in this repo. Anyone can read every name,
+> email and phone number in it, and logins are only checked in the browser. Don't put real
+> personal information or real passwords in it. A proper backend will replace this later.
+
+The `docs/` folder holds a browser-only copy of the app (same features, plain JavaScript) that
+GitHub Pages can host for free. It reads `data/clubhub.json` from GitHub, and each change is
+saved as a commit to that file through the GitHub API.
+
+- **URL** (once Pages is turned on): https://elcomiqu321.github.io/Clubhub/
+- **Viewing** works for anyone, with no setup.
+- **Saving changes** needs a GitHub token on each device: in the app, open Settings and paste a
+  fine-grained token limited to this repo with *Contents: Read and write*. The token stays in that
+  browser only. Anyone who has it can change files in the repo, so share it only with testers you trust.
+- Without a token, reads come from GitHub's file cache, which can be up to ~5 minutes behind.
+
+To turn it on: merge this branch into `main`, then in the repo go to
+Settings → Pages → Build and deployment → Source: *Deploy from a branch*, Branch: `main`, folder `/docs`.
+
+To reset the online data to fresh demo data: `python tools/export_demo_json.py`, then commit
+`data/clubhub.json`. To point the app at another repo or file, edit `docs/config.js`.
+
 ## Project layout
 
 ```
@@ -75,6 +99,9 @@ clubhub/
   templates/            Jinja HTML pages, one folder per feature
   static/               CSS, JS, service worker, manifest, icons
 tests/                  pytest smoke tests
+docs/                   GitHub Pages version (static HTML/JS, data in data/clubhub.json)
+data/clubhub.json       online demo database (public!)
+tools/                  helper scripts
 ```
 
 To add a new tool later (chat, stats, payments...), create a new module with a Flask
