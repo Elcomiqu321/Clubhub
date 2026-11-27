@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Clubhub (demo)</title>
+  <meta name="theme-color" content="#1e88e5">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clubhub">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/">Clubhub</a>
+  <nav class="topnav" id="topnav"></nav>
+  <div class="topright" id="topright"></div>
+</header>
+<main class="container">
+  <div class="warn">⚠️ Test demo: all data, including names and emails, is stored in a <strong>public</strong> file on GitHub. Don't enter real personal information or a real password.</div>
+  <div id="flash"></div>
+  <div id="view">Loading…</div>
+</main>
+<nav class="bottomnav" id="bottomnav" hidden>
+  <a href="#/"><span>🏠</span>Home</a>
+  <a href="#/calendar"><span>📅</span>Calendar</a>
+  <a href="#/events"><span>⚽</span>Events</a>
+  <a href="#/teams"><span>👥</span>Teams</a>
+  <a href="#/members"><span>🙋</span>Members</a>
+</nav>
+<div id="saving" class="saving" hidden>Saving…</div>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

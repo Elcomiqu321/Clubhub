@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<h1>My profile</h1>
+<form method="post" class="form">
+  {{ csrf() }}
+  <label>Name <input name="name" required value="{{ g.user.name }}"></label>
+  <label>Phone <input name="phone" type="tel" value="{{ g.user.phone or '' }}"></label>
+  <label>Email <input value="{{ g.user.email }}" disabled></label>
+  <fieldset>
+    <legend>Change password (optional)</legend>
+    <label>Current password <input type="password" name="current_password" autocomplete="current-password"></label>
+    <label>New password <input type="password" name="new_password" minlength="6" autocomplete="new-password"></label>
+  </fieldset>
+  <button class="btn">Save</button>
+</form>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+<div class="row-between cal-head">
+  <a class="btn small ghost" href="{{ url_for('calendar.month', month=prev_month.strftime('%Y-%m'), team=team_id or '', category=category, mine='1' if mine else '') }}">‹</a>
+  <h1>{{ first.strftime('%B %Y') }}</h1>
+  <a class="btn small ghost" href="{{ url_for('calendar.month', month=next_month.strftime('%Y-%m'), team=team_id or '', category=category, mine='1' if mine else '') }}">›</a>
+</div>
+<form method="get" class="filters">
+  <input type="hidden" name="month" value="{{ first.strftime('%Y-%m') }}">
+  <select name="team" onchange="this.form.submit()">
+    <option value="">All teams + club</option>
+    {% for t in teams %}<option value="{{ t.id }}" {% if t.id == team_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+  </select>
+  <select name="category" onchange="this.form.submit()">
+    <option value="">Sport & social</option>
+    <option value="sport" {% if category == 'sport' %}selected{% endif %}>Sport</option>
+    <option value="social" {% if category == 'social' %}selected{% endif %}>Social</option>
+  </select>
+  <label class="check"><input type="checkbox" name="mine" value="1" {% if mine %}checked{% endif %} onchange="this.form.submit()"> Only mine</label>
+  <a href="{{ url_for('calendar.month') }}" class="small">Today</a>
+</form>
+
+<div class="cal">
+  {% for n in weekday_names %}<div class="cal-dow">{{ n }}</div>{% endfor %}
+  {% for week in weeks %}{% for day in week %}
+    {% set key = day.isoformat() %}
+    <a href="#d-{{ key }}" class="cal-day {% if day.month != first.month %}out{% endif %} {% if day == today %}today{% endif %}"
+       data-day="{{ key }}">
+      <span class="num">{{ day.day }}</span>
+      {% for e in by_day.get(key, []) %}
+        <span class="cal-ev {{ e.category }}" style="--c:{{ e.team_color or '#8e24aa' }}" title="{{ e.title }}">
+          <span class="t">{{ e.starts_at[11:16] }} {{ e.title }}</span>
+        </span>
+      {% endfor %}
+    </a>
+  {% endfor %}{% endfor %}
+</div>
+<p class="legend small">
+  {% for t in teams %}<span><span class="dot" style="background:{{ t.color }}"></span>{{ t.name }}</span>{% endfor %}
+  <span><span class="dot" style="background:#8e24aa"></span>Whole club</span>
+</p>
+
+<h2>Agenda</h2>
+{% set ns = namespace(last='') %}
+{% for e in month_events %}
+  {% if e.starts_at[:10] != ns.last %}
+    {% set ns.last = e.starts_at[:10] %}
+    <h3 id="d-{{ ns.last }}" class="agenda-day">{{ ns.last[8:10] }}/{{ ns.last[5:7] }}
+      {% if g.user.is_admin %}<a class="small" href="{{ url_for('events.create', date=ns.last) }}">+ add</a>{% endif %}</h3>
+  {% endif %}
+  {{ event_card(e, request.full_path) }}
+{% else %}
+  <p class="muted">No events this month.</p>
+{% endfor %}
+{% endblock %}

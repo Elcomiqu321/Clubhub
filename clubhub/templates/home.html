@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Hi {{ g.user.name.split()[0] }} 👋</h1>
+
+<section>
+  <h2>My teams</h2>
+  {% if my_teams %}
+  <div class="chips">
+    {% for t in my_teams %}
+      <a class="chip" style="border-color:{{ t.color }}" href="{{ url_for('teams.detail', team_id=t.id) }}">
+        {{ t.name }} <small>({{ t.role }})</small></a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">You are not on any team yet. Ask a coach or admin to add you.</p>
+  {% endif %}
+</section>
+
+<section>
+  <div class="row-between">
+    <h2>Upcoming for me</h2>
+    <a href="{{ url_for('calendar.month', mine=1) }}">Calendar →</a>
+  </div>
+  {% for e in events %}
+    {{ event_card(e, request.path) }}
+  {% else %}
+    <p class="muted">No upcoming events.</p>
+  {% endfor %}
+</section>
+{% endblock %}

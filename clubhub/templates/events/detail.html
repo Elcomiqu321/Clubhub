@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_macros.html" import team_badge, rsvp_buttons, fmt_dt, csrf %}
+{% block title %}{{ event.title }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>{{ event.title }}{% if event.opponent %} vs {{ event.opponent }}{% endif %}</h1>
+  {% if event.can_manage %}<a class="btn small ghost" href="{{ url_for('events.edit', event_id=event.id) }}">Edit</a>{% endif %}
+</div>
+<div class="card">
+  <p>{{ team_badge(event) }} <span class="cat {{ event.category }}">{{ event.category }} · {{ event.kind }}</span></p>
+  <p>🕒 {{ fmt_dt(event.starts_at) }}{% if event.ends_at %} → {{ fmt_dt(event.ends_at) }}{% endif %}</p>
+  {% if event.location %}<p>📍 {{ event.location }}</p>{% endif %}
+  {% if event.description %}<p class="pre">{{ event.description }}</p>{% endif %}
+</div>
+
+<h2>Are you in?</h2>
+{% if event.can_rsvp %}
+  {{ rsvp_buttons(event, request.path) }}
+{% else %}
+  <p class="muted">Only members of {{ event.team_name }} can answer.</p>
+{% endif %}
+
+<h2>Availability</h2>
+<div class="avail">
+  <div><h3 class="t-yes">✓ In ({{ groups['yes']|length }})</h3>
+    <ul>{% for p in groups['yes'] %}<li>{{ p.name }}{% if p.role and p.role != 'player' %} <small>({{ p.role }})</small>{% endif %}</li>{% endfor %}</ul></div>
+  <div><h3 class="t-maybe">? Maybe ({{ groups['maybe']|length }})</h3>
+    <ul>{% for p in groups['maybe'] %}<li>{{ p.name }}</li>{% endfor %}</ul></div>
+  <div><h3 class="t-no">✗ Out ({{ groups['no']|length }})</h3>
+    <ul>{% for p in groups['no'] %}<li>{{ p.name }}</li>{% endfor %}</ul></div>
+  <div><h3 class="muted">No answer ({{ groups[None]|length }})</h3>
+    <ul>{% for p in groups[None] %}<li>{{ p.name }}</li>{% endfor %}</ul></div>
+</div>
+{% endblock %}

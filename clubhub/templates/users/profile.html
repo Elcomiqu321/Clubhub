@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ member.name }}{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>{{ member.name }}</h1>
+  {% if member.id == g.user.id %}<a class="btn small ghost" href="{{ url_for('users.edit_me') }}">Edit my profile</a>{% endif %}
+</div>
+<div class="card">
+  <p>✉️ <a href="mailto:{{ member.email }}">{{ member.email }}</a></p>
+  {% if member.phone %}<p>📞 <a href="tel:{{ member.phone }}">{{ member.phone }}</a></p>{% endif %}
+  <p class="muted small">Member since {{ member.created_at[:10] }}{% if member.is_admin %} · club admin{% endif %}</p>
+</div>
+<h2>Teams</h2>
+{% for t in teams %}
+  <a class="card team-row" style="border-left-color:{{ t.color }}" href="{{ url_for('teams.detail', team_id=t.id) }}">
+    <strong>{{ t.name }}</strong> <span class="muted">{{ t.role }}{% if t.position %} · {{ t.position }}{% endif %}{% if t.jersey_number %} · #{{ t.jersey_number }}{% endif %}</span>
+  </a>
+{% else %}
+  <p class="muted">Not on any team.</p>
+{% endfor %}
+{% if g.user.is_admin and member.id != g.user.id %}
+<h2>Admin</h2>
+<div class="row-form">
+  <form method="post" action="{{ url_for('users.toggle_admin', user_id=member.id) }}">
+    {{ csrf() }}<button class="btn ghost">{{ 'Remove admin rights' if member.is_admin else 'Make club admin' }}</button>
+  </form>
+  <form method="post" action="{{ url_for('users.delete', user_id=member.id) }}" onsubmit="return confirm('Delete {{ member.name }}?')">
+    {{ csrf() }}<button class="btn danger">Delete member</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

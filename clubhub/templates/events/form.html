@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Edit event' if event.id else 'New event' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit event' if event.id else 'New event' }}</h1>
+<form method="post" class="form" id="event-form">
+  {{ csrf() }}
+  <label>Title <input name="title" required value="{{ event.title or '' }}" placeholder="Training, League match, Club party..."></label>
+
+  <fieldset class="seg">
+    <legend>Type</legend>
+    <label><input type="radio" name="category" value="sport" {% if event.category != 'social' %}checked{% endif %}> ⚽ Sport</label>
+    <label><input type="radio" name="category" value="social" {% if event.category == 'social' %}checked{% endif %}> 🎉 Social</label>
+  </fieldset>
+
+  <label>Kind
+    <select name="kind" id="kind" data-current="{{ event.kind or '' }}">
+      {% for cat, ks in kinds.items() %}{% for k in ks %}
+        <option value="{{ k }}" data-cat="{{ cat }}" {% if k == event.kind %}selected{% endif %}>{{ k }}</option>
+      {% endfor %}{% endfor %}
+    </select>
+  </label>
+
+  <label>Team
+    <select name="team_id">
+      {% if is_admin %}<option value="">Whole club (everyone invited)</option>{% endif %}
+      {% for t in teams %}<option value="{{ t.id }}" {% if t.id == event.team_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+    </select>
+  </label>
+
+  <div class="two">
+    <label>Starts <input type="datetime-local" name="starts_at" required value="{{ event.starts_at or '' }}"></label>
+    <label>Ends <input type="datetime-local" name="ends_at" value="{{ event.ends_at or '' }}"></label>
+  </div>
+  <label>Location <input name="location" value="{{ event.location or '' }}"></label>
+  <label class="sport-only">Opponent <input name="opponent" value="{{ event.opponent or '' }}" placeholder="For matches"></label>
+  <label>Details <textarea name="description" rows="3">{{ event.description or '' }}</textarea></label>
+  {% if not event.id %}
+  <label>Repeat weekly for <input type="number" name="repeat_weeks" min="0" max="52" value="0" class="num"> more weeks</label>
+  {% endif %}
+  <button class="btn">Save</button>
+</form>
+{% if event.id %}
+<form method="post" action="{{ url_for('events.delete', event_id=event.id) }}" class="danger-zone"
+      onsubmit="return confirm('Delete this event?')">
+  {{ csrf() }}<button class="btn danger">Delete event</button>
+</form>
+{% endif %}
+{% endblock %}

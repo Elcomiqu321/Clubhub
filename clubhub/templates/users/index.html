@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>Club members ({{ users|length }})</h1>
+  {% if g.user.is_admin %}<a class="btn" href="{{ url_for('users.create') }}">+ Add member</a>{% endif %}
+</div>
+<input type="search" id="member-filter" placeholder="Search members…" class="search">
+<div id="member-list">
+{% for u in users %}
+  <a class="card member-row" href="{{ url_for('users.profile', user_id=u.id) }}" data-search="{{ (u.name ~ ' ' ~ u.email ~ ' ' ~ (u.teams or ''))|lower }}">
+    <div><strong>{{ u.name }}</strong>{% if u.is_admin %} <span class="badge club">admin</span>{% endif %}</div>
+    <div class="muted small">{{ u.teams or 'No team' }}</div>
+  </a>
+{% endfor %}
+</div>
+{% endblock %}
