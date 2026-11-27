@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "_macros.html" import event_card %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="row-between">
+  <h1>{{ 'Past events' if show_past else 'Upcoming events' }}</h1>
+  {% if can_create %}<a class="btn" href="{{ url_for('events.create') }}">+ New event</a>{% endif %}
+</div>
+<form method="get" class="filters">
+  <select name="category" onchange="this.form.submit()">
+    <option value="">Sport & social</option>
+    <option value="sport" {% if category == 'sport' %}selected{% endif %}>Sport only</option>
+    <option value="social" {% if category == 'social' %}selected{% endif %}>Social only</option>
+  </select>
+  <select name="team" onchange="this.form.submit()">
+    <option value="">All teams</option>
+    {% for t in teams %}<option value="{{ t.id }}" {% if t.id == team_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}
+  </select>
+  <label class="check"><input type="checkbox" name="past" value="1" {% if show_past %}checked{% endif %} onchange="this.form.submit()"> Past</label>
+</form>
+{% for e in events %}
+  {{ event_card(e, request.full_path) }}
+{% else %}
+  <p class="muted">No events found.</p>
+{% endfor %}
+{% endblock %}

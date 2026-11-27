@@ -1,0 +1,43 @@
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro fmt_dt(value) -%}
+  {%- if value %}{{ value[8:10] }}/{{ value[5:7] }}/{{ value[0:4] }} {{ value[11:16] }}{% endif -%}
+{%- endmacro %}
+
+{% macro team_badge(e) -%}
+  {% if e.team_id %}<span class="badge" style="background:{{ e.team_color }}">{{ e.team_name }}</span>
+  {% else %}<span class="badge club">Whole club</span>{% endif %}
+{%- endmacro %}
+
+{% macro rsvp_buttons(e, next_url) %}
+  {% if e.can_rsvp %}
+  <form method="post" action="{{ url_for('events.rsvp', event_id=e.id) }}" class="rsvp">
+    {{ csrf() }}
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <button name="status" value="yes" class="r-yes {% if e.my_rsvp == 'yes' %}on{% endif %}">✓ In</button>
+    <button name="status" value="maybe" class="r-maybe {% if e.my_rsvp == 'maybe' %}on{% endif %}">? Maybe</button>
+    <button name="status" value="no" class="r-no {% if e.my_rsvp == 'no' %}on{% endif %}">✗ Out</button>
+  </form>
+  {% endif %}
+{% endmacro %}
+
+{% macro event_card(e, next_url) %}
+<article class="card event {{ e.category }}">
+  <a href="{{ url_for('events.detail', event_id=e.id) }}" class="event-main">
+    <div class="when">
+      <strong>{{ e.starts_at[8:10] }}/{{ e.starts_at[5:7] }}</strong>
+      <small>{{ e.starts_at[11:16] }}</small>
+    </div>
+    <div class="what">
+      <div class="title">{{ e.title }}{% if e.opponent %} vs {{ e.opponent }}{% endif %}</div>
+      <div class="meta">
+        {{ team_badge(e) }}
+        <span class="cat {{ e.category }}">{{ e.category }} · {{ e.kind }}</span>
+        {% if e.location %}<span>📍 {{ e.location }}</span>{% endif %}
+      </div>
+      <div class="counts">✓ {{ e.n_yes }} · ? {{ e.n_maybe }} · ✗ {{ e.n_no }}</div>
+    </div>
+  </a>
+  {{ rsvp_buttons(e, next_url) }}
+</article>
+{% endmacro %}

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Clubhub{% endblock %} · Clubhub</title>
+  <meta name="theme-color" content="#1e88e5">
+  <link rel="manifest" href="{{ url_for('manifest') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Clubhub">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('main.home') }}">Clubhub</a>
+  {% if g.user %}
+  <nav class="topnav">
+    <a href="{{ url_for('main.home') }}">Home</a>
+    <a href="{{ url_for('calendar.month') }}">Calendar</a>
+    <a href="{{ url_for('events.index') }}">Events</a>
+    <a href="{{ url_for('teams.index') }}">Teams</a>
+    <a href="{{ url_for('users.index') }}">Members</a>
+  </nav>
+  <div class="topright">
+    <button id="install-btn" class="btn small" hidden>Install app</button>
+    <a href="{{ url_for('users.profile', user_id=g.user.id) }}" class="me">{{ g.user.name.split()[0] }}</a>
+    <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <button class="linkbtn">Log out</button>
+    </form>
+  </div>
+  {% endif %}
+</header>
+
+<main class="container">
+  {% for cat, msg in get_flashed_messages(with_categories=true) %}
+    <div class="flash {{ cat }}">{{ msg }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+
+{% if g.user %}
+<nav class="bottomnav">
+  <a href="{{ url_for('main.home') }}"><span>🏠</span>Home</a>
+  <a href="{{ url_for('calendar.month') }}"><span>📅</span>Calendar</a>
+  <a href="{{ url_for('events.index') }}"><span>⚽</span>Events</a>
+  <a href="{{ url_for('teams.index') }}"><span>👥</span>Teams</a>
+  <a href="{{ url_for('users.index') }}"><span>🙋</span>Members</a>
+</nav>
+{% endif %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
