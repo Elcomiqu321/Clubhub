@@ -60,6 +60,12 @@ https link it gives you. Then use "Install app" (Android / Chrome) or Share → 
 
 ## Online test version (GitHub Pages)
 
+> 📱 **Current mode: device only.** With no token set (the default), the online app loads the demo
+> data once from `data/clubhub.json`, then keeps every change in that phone's or browser's storage.
+> Nothing is shared between devices, and nothing is written back to GitHub. The URL is public, so
+> anyone with the link can open the app and use it on their own device. Use "Reset this device's data"
+> in Settings to start over. The token options below are optional and currently unused.
+
 > ⚠️ **Testing only. Everything is public.** The online version keeps the whole club database in
 > [`data/clubhub.json`](data/clubhub.json), a public file in this repo. Anyone can read every name,
 > email and phone number in it, and logins are only checked in the browser. Don't put real
