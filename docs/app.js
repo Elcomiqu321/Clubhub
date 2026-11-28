@@ -222,9 +222,11 @@ views.settings = () => `<h1>Settings</h1>
   <div class="card">
     <p><strong>Saving changes</strong> needs a GitHub token with write access to the
       <code>${esc(CFG.owner)}/${esc(CFG.repo)}</code> repo. Without one, the app is view only.</p>
-    <p class="small muted">Create one on GitHub: Settings → Developer settings → Fine-grained tokens →
-      Generate new token. Repository access: only <code>${esc(CFG.repo)}</code>.
-      Permissions: <em>Contents: Read and write</em>. The token is stored only in this browser.</p>
+    <p><a class="btn ghost" target="_blank" rel="noopener"
+      href="https://github.com/settings/personal-access-tokens/new?name=clubhub-${Date.now().toString(36)}&description=Clubhub%20demo%20saving&target_name=${encodeURIComponent(CFG.owner)}&expires_in=30&contents=write">Create a token on GitHub ↗</a></p>
+    <p class="small muted">On that GitHub page: Repository access → "Only select repositories" → <code>${esc(CFG.repo)}</code>.
+      Permissions → Contents: <em>Read and write</em>. Click "Generate token", copy it, and paste it below.
+      The token is stored only in this browser.</p>
     <p class="small muted">Anyone holding this token can change files in the repo, so only share it with people you trust.</p>
     <form class="form" data-form="token">
       <label>GitHub token <input name="token" type="password" placeholder="github_pat_…" value="${esc(store.get("clubhub_token") || "")}"></label>
@@ -551,6 +553,7 @@ function renderChrome() {
   $("#bottomnav").hidden = !ME;
   document.body.style.paddingBottom = ME ? "" : "0";
   $("#topright").innerHTML = (deferredPrompt ? `<button id="install-btn" class="btn small">Install app</button>` : "") +
+    `<a href="#/settings" title="Settings">⚙️</a>` +
     (ME ? `<a href="#/members/${ME.id}" class="me">${esc(ME.name.split(" ")[0])}</a>
            <button class="linkbtn" data-action="logout">Log out</button>` : "");
 }
@@ -840,6 +843,6 @@ async function loadData() {
 handleSetupLink();
 if (!CONFIG_OK) {
   $("#flash").insertAdjacentHTML("beforebegin",
-    `<div class="flash error">docs/config.js has an error and was ignored, so saving is off. Fix that file on GitHub.</div>`);
+    `<div class="flash error">docs/config.js has an error and was ignored, so saving is off. Fix that file on GitHub, or <a href="#/settings">add a token for this device</a>.</div>`);
 }
 loadData().then(showPending);
