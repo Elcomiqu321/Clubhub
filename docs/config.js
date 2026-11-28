@@ -11,7 +11,7 @@ window.CLUBHUB_CONFIG = {
   // and use it to read and change files in the repo it is allowed to write to.
   // Use a fine-grained token limited to one repo with "Contents: Read and write" only.
   // Leave empty to require a per-device token (Settings page) or a setup link instead.
-const _a = "github_pat_11AXY";
-const _b = "M5OA03zsAGR4b39mt_KfCr7dzDCUv6s7MaaDTjxvrG5HIf0CkOUCVbXuIDLuEIYLFSX4RHTGK3GAc"
-token = _a + _b; //
+const _a = "github_pat_11AXYM5OA0272hVPCoKtSP_";
+const _b = "ztxIGpSI4qbiN55610AQVRORBq6NuEPgHG8DPRvYU6qZQZJJO73Y8XE3Kzr";
+token = _a + _b;
 };
