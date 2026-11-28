@@ -5,7 +5,11 @@
 // NOT SECURE: the file is public and logins are checked in the browser. Testing only.
 "use strict";
 
-const CFG = window.CLUBHUB_CONFIG;
+// If config.js is missing or has a syntax error, fall back to defaults so the app
+// still loads (view only) instead of hanging on "Loading…".
+const CONFIG_OK = !!window.CLUBHUB_CONFIG;
+const CFG = window.CLUBHUB_CONFIG ||
+  { owner: "Elcomiqu321", repo: "Clubhub", branch: "main", path: "data/clubhub.json", token: "" };
 const API = `https://api.github.com/repos/${CFG.owner}/${CFG.repo}/contents/${CFG.path}`;
 const RAW = `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch}/${CFG.path}`;
 
@@ -834,4 +838,8 @@ async function loadData() {
   }
 }
 handleSetupLink();
+if (!CONFIG_OK) {
+  $("#flash").insertAdjacentHTML("beforebegin",
+    `<div class="flash error">docs/config.js has an error and was ignored, so saving is off. Fix that file on GitHub.</div>`);
+}
 loadData().then(showPending);
