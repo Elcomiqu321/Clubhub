@@ -6,7 +6,7 @@
 "use strict";
 
 // If config.js is missing or has a syntax error, fall back to defaults so the app
-// still loads (view only) instead of hanging on "Loading…".
+// still loads (device-only mode) instead of hanging on "Loading…".
 const CONFIG_OK = !!window.CLUBHUB_CONFIG;
 const CFG = window.CLUBHUB_CONFIG ||
   { owner: "Elcomiqu321", repo: "Clubhub", branch: "main", path: "data/clubhub.json", token: "" };
@@ -99,8 +99,13 @@ async function fetchRemote() {
 // so two people saving at the same time don't overwrite each other.
 async function save(message, change) {
   if (!token()) {
-    flash("Viewing only: add a GitHub token in Settings to save changes.", "error");
-    return false;
+    // Device-only mode: change a copy of the data and keep it in this browser.
+    const data = JSON.parse(JSON.stringify(DB));
+    if ((await change(data)) === false) return false;
+    DB = data;
+    saveLocal();
+    refreshMe();
+    return true;
   }
   $("#saving").hidden = false;
   try {
@@ -210,7 +215,7 @@ views.login = () => `<div class="narrow"><h1>Log in</h1>
   <p class="small"><a href="#/settings">Settings (GitHub token)</a></p></div>`;
 
 views.register = () => `<div class="narrow"><h1>Create your account</h1>
-  ${token() ? "" : `<div class="flash error">Registering saves to GitHub, so this device needs a token first. <a href="#/settings">Add one in Settings</a>.</div>`}
+  
   <form class="form" data-form="register">
     <label>Full name <input name="name" required></label>
     <label>Email <input type="email" name="email" required></label>
@@ -221,7 +226,7 @@ views.register = () => `<div class="narrow"><h1>Create your account</h1>
 views.settings = () => `<h1>Settings</h1>
   <div class="card">
     <p><strong>Saving changes</strong> needs a GitHub token with write access to the
-      <code>${esc(CFG.owner)}/${esc(CFG.repo)}</code> repo. Without one, the app is view only.</p>
+      <code>${esc(CFG.owner)}/${esc(CFG.repo)}</code> repo. Without one, the app works on this device only: changes are kept in this browser and nobody else sees them.</p>
     <p><a class="btn ghost" target="_blank" rel="noopener"
       href="https://github.com/settings/personal-access-tokens/new?name=clubhub-${Date.now().toString(36)}&description=Clubhub%20demo%20saving&target_name=${encodeURIComponent(CFG.owner)}&expires_in=30&contents=write">Create a token on GitHub ↗</a></p>
     <p class="small muted">On that GitHub page: Repository access → "Only select repositories" → <code>${esc(CFG.repo)}</code>.
@@ -233,9 +238,11 @@ views.settings = () => `<h1>Settings</h1>
       <div class="row-form"><button class="btn">Save token</button>
         <button type="button" class="btn ghost" data-action="forget-token">Remove token</button></div>
     </form>
+    <p class="small"><button type="button" class="btn small danger" data-action="reset-local">Reset this device's data</button>
+      <span class="muted">Goes back to the demo data.</span></p>
     <p class="small">Status: ${store.get("clubhub_token") ? "token saved on this device, changes are saved to GitHub"
       : sharedToken() ? "using the shared token from config.js, changes are saved to GitHub"
-      : "no token, view only"}</p>
+      : "no token, changes are saved on this device only"}</p>
     ${token() ? `<p class="small muted">Setup link for other devices (contains the token, share carefully):<br>
       <code>${esc(location.href.split("#")[0])}#/setup?token=${esc(token())}</code></p>` : ""}
   </div>
@@ -249,7 +256,7 @@ views.home = () => {
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at)).slice(0, 10);
   const teams = DB.teams.filter((t) => mine.has(t.id));
   return `<h1>Hi ${esc(ME.name.split(" ")[0])} 👋</h1>
-    ${token() ? "" : `<div class="flash">View only on this device. <a href="#/settings">Add a GitHub token</a> to save changes.</div>`}
+    ${token() ? "" : `<p class="muted small">📱 Your changes are saved on this device only.</p>`}
     <section><h2>My teams</h2>
       ${teams.length ? `<div class="chips">${teams.map((t) => `<a class="chip" style="border-color:${esc(t.color)}" href="#/teams/${t.id}">${esc(t.name)} <small>(${esc(roleIn(t.id))})</small></a>`).join("")}</div>`
         : `<p class="muted">You are not on any team yet. Ask a coach or admin to add you.</p>`}</section>
@@ -830,9 +837,26 @@ function handleSetupLink() {
   pendingFlash = t ? "This device can now save changes." : null;
 }
 
+// Device-only data, used when no token is set.
+const LOCAL_KEY = "clubhub_local_db";
+function saveLocal() { store.set(LOCAL_KEY, JSON.stringify(DB)); }
+function readLocal() { try { return JSON.parse(store.get(LOCAL_KEY) || "null"); } catch { return null; } }
+
+actions["reset-local"] = async () => {
+  if (!confirm("Delete this device's changes and go back to the demo data?")) return;
+  store.set(LOCAL_KEY, null);
+  await loadData();
+  flash("This device's data was reset.");
+};
+
 async function loadData() {
   try {
-    DB = (await fetchRemote()).data;
+    if (token()) DB = (await fetchRemote()).data;
+    else {
+      // First visit: start from the demo data in the repo, then keep everything locally.
+      DB = readLocal();
+      if (!DB) { DB = (await fetchRemote()).data; saveLocal(); }
+    }
     refreshMe();
     route();
   } catch (err) {
@@ -843,6 +867,6 @@ async function loadData() {
 handleSetupLink();
 if (!CONFIG_OK) {
   $("#flash").insertAdjacentHTML("beforebegin",
-    `<div class="flash error">docs/config.js has an error and was ignored, so saving is off. Fix that file on GitHub, or <a href="#/settings">add a token for this device</a>.</div>`);
+    `<div class="flash error">docs/config.js has an error and was ignored. Changes are saved on this device only.</div>`);
 }
 loadData().then(showPending);
